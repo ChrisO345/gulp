@@ -1,5 +1,11 @@
 package gulp
 
+import (
+	"fmt"
+	"github.com/chriso345/gulp/constants"
+)
+
 func Gulp() bool {
-	return true
+	fmt.Println(constants.LpConstraintLE)
+	return constants.Runner()
 }

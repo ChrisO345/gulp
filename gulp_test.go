@@ -1,6 +1,8 @@
 package gulp
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGulpBuild(t *testing.T) {
 	expected := true
