@@ -1,4 +1,4 @@
-package constants
+package gulp
 
 func Runner() bool {
 	return true
@@ -26,11 +26,12 @@ const (
 type LpStatus int
 
 const (
-	LpStatusNotSolved  = LpStatus(0)
-	LpStatusOptimal    = LpStatus(1)
-	LpStatusInfeasible = LpStatus(2)
-	LpStatusUnbounded  = LpStatus(3)
-	LpStatusUndefined  = LpStatus(4)
+	LpStatusNotSolved      = LpStatus(0)
+	LpStatusOptimal        = LpStatus(1)
+	LpStatusInfeasible     = LpStatus(2)
+	LpStatusUnbounded      = LpStatus(3)
+	LpStatusUndefined      = LpStatus(4)
+	LpStatusNotImplemented = LpStatus(5)
 )
 
 // TODO: Status Mapping ?? dictionary??
