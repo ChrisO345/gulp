@@ -6,9 +6,22 @@ import (
 )
 
 /***********************************************************************************************************************
+CONSTRAINTS
 ***********************************************************************************************************************/
 
-func TestConstraint_AddSlackVariableEQ(t *testing.T) {
+func TestConstraint(t *testing.T) {
+	expected := "1 * x1 + 2 * x2 >= 3"
+
+	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
+	constraint := Constraint{LpConstraintGE, pairs, 3}
+
+	result := constraint.String()
+	if result != expected {
+		t.Errorf("Expected %s but got %s", expected, result)
+	}
+}
+
+func TestConstraint_AddSlackVariable_EQ(t *testing.T) {
 	expected := "1 * x1 + 2 * x2 = 3"
 
 	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
@@ -21,7 +34,7 @@ func TestConstraint_AddSlackVariableEQ(t *testing.T) {
 	}
 }
 
-func TestConstraint_AddSlackVariableGE(t *testing.T) {
+func TestConstraint_AddSlackVariable_GE(t *testing.T) {
 	expected := "1 * x1 + 2 * x2 + 1 * s1 = 3"
 
 	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
@@ -34,10 +47,10 @@ func TestConstraint_AddSlackVariableGE(t *testing.T) {
 	}
 }
 
-func TestConstraint_AddSlackVariableLE(t *testing.T) {
-	expected := "1 * x1 + 2 * x2 + 1 * s1 = 3"
+func TestConstraint_AddSlackVariable_LE(t *testing.T) {
+	expected := "- 1 * x1 + 2 * x2 + 1 * s1 = 3"
 
-	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
+	pairs := []Pair{{-1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
 	constraint := Constraint{LpConstraintLE, pairs, 3}
 	constraint.AddSlackVariable()
 
@@ -48,6 +61,7 @@ func TestConstraint_AddSlackVariableLE(t *testing.T) {
 }
 
 /***********************************************************************************************************************
+OBJECTIVES
 ***********************************************************************************************************************/
 
 func TestNewObjective(t *testing.T) {
@@ -62,11 +76,15 @@ func TestNewObjective(t *testing.T) {
 	}
 }
 
-func TestNewLinearProgram(t *testing.T) {
-	expected := "Min: 3 * x1 + 4 * x2\n\t1 * x1 + 2 * x2 >= 3\n\t1 * x1 + 2 * x2 = 3\n\t1 * x1 + 2 * x2 <= 3\n"
+/***********************************************************************************************************************
+LINEAR PROGRAM
+***********************************************************************************************************************/
 
-	objective := Objective{LpMinimise, []Pair{{3, Variable{"x1", nil}}, {4, Variable{"x2", nil}}}}
-	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
+func TestNewLinearProgram(t *testing.T) {
+	expected := "Min: - 3 * x1 + 4 * x2\n\t1 * x1 - 2 * x2 >= 3\n\t1 * x1 - 2 * x2 = 3\n\t1 * x1 - 2 * x2 <= 3\n"
+
+	objective := Objective{LpMinimise, []Pair{{-3, Variable{"x1", nil}}, {4, Variable{"x2", nil}}}}
+	pairs := []Pair{{1, Variable{"x1", nil}}, {-2, Variable{"x2", nil}}}
 	constraint1 := Constraint{LpConstraintGE, pairs, 3}
 	constraint2 := Constraint{LpConstraintEQ, pairs, 3}
 	constraint3 := Constraint{LpConstraintLE, pairs, 3}
@@ -80,6 +98,7 @@ func TestNewLinearProgram(t *testing.T) {
 }
 
 /***********************************************************************************************************************
+PAIR
 ***********************************************************************************************************************/
 
 func TestNewPair(t *testing.T) {
@@ -92,6 +111,22 @@ func TestNewPair(t *testing.T) {
 		t.Errorf("Expected %s but got %s", expected, result)
 	}
 }
+
+func TestPair_Result(t *testing.T) {
+	expected := 9.0
+
+	variableValue := 3.0
+	pair := NewPair(3, Variable{"x1", &variableValue})
+
+	result := pair.Result()
+	if result != expected {
+		t.Errorf("Expected %f but got %f", expected, result)
+	}
+}
+
+/***********************************************************************************************************************
+VARIABLE
+***********************************************************************************************************************/
 
 func TestNewVariable(t *testing.T) {
 	expectedName := "x1"
@@ -106,6 +141,9 @@ func TestNewVariable(t *testing.T) {
 		t.Errorf("Expected %s %f but got %s %f", expectedName, expectedValue, resultName, resultValue)
 	}
 }
+
+/***********************************************************************************************************************
+***********************************************************************************************************************/
 
 /***********************************************************************************************************************
 ***********************************************************************************************************************/

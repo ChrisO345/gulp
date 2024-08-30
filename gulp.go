@@ -2,6 +2,7 @@ package gulp
 
 import (
 	"fmt"
+	"math"
 )
 
 // TODO:
@@ -11,12 +12,12 @@ import (
 
 func Gulp() bool {
 	// Objective: Minimise 3x1 + 4x2
-	pairs := []Pair{{3, Variable{"x1", nil}}, {4, Variable{"x2", nil}}}
+	pairs := []Pair{{3, Variable{"x1", nil}}, {-4, Variable{"x2", nil}}}
 
 	objective := NewObjective(LpMinimise, pairs)
 
 	// Constraints: 1 * x1 + 2 * x2 + 1
-	constraintPairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
+	constraintPairs := []Pair{{1, Variable{"x1", nil}}, {-2, Variable{"x2", nil}}}
 	constraint1 := Constraint{LpConstraintGE, constraintPairs, 3}
 	constraint2 := Constraint{LpConstraintEQ, constraintPairs, 3}
 	constraint3 := Constraint{LpConstraintLE, constraintPairs, 3}
@@ -69,9 +70,15 @@ func (o *Objective) String() string {
 	}
 
 	for i, v := range o.Pairs {
-		stringBuilder += fmt.Sprintf("%v * %v", o.Pairs[i].Coefficient, v.Variable.Name)
+		if i != 0 && o.Pairs[i].Coefficient >= 0 {
+			stringBuilder += "+ "
+		} else if o.Pairs[i].Coefficient < 0 {
+			stringBuilder += "- "
+		}
+
+		stringBuilder += fmt.Sprintf("%v * %v", math.Abs(o.Pairs[i].Coefficient), v.Variable.Name)
 		if i < len(o.Pairs)-1 {
-			stringBuilder += " + "
+			stringBuilder += " "
 		}
 	}
 	return stringBuilder
@@ -88,9 +95,15 @@ type Constraint struct {
 func (c *Constraint) String() string {
 	stringBuilder := ""
 	for i, v := range c.Pairs {
-		stringBuilder += fmt.Sprintf(v.String())
+		if i != 0 && c.Pairs[i].Coefficient >= 0 {
+			stringBuilder += "+ "
+		} else if c.Pairs[i].Coefficient < 0 {
+			stringBuilder += "- "
+		}
+
+		stringBuilder += fmt.Sprintf("%v * %v", math.Abs(c.Pairs[i].Coefficient), v.Variable.Name)
 		if i < len(c.Pairs)-1 {
-			stringBuilder += " + "
+			stringBuilder += " "
 		}
 	}
 	// TODO: have a mapping instead of a switch
