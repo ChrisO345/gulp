@@ -12,8 +12,8 @@ CONSTRAINTS
 func TestConstraint(t *testing.T) {
 	expected := "1 * x1 + 2 * x2 >= 3"
 
-	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
-	constraint := Constraint{LpConstraintGE, pairs, 3}
+	pairs := []Pair{{1, NewVariable("x1", nil)}, {2, NewVariable("x2", nil)}}
+	constraint := NewConstraint(LpConstraintGE, pairs, 3)
 
 	result := constraint.String()
 	if result != expected {
@@ -24,8 +24,8 @@ func TestConstraint(t *testing.T) {
 func TestConstraint_AddSlackVariable_EQ(t *testing.T) {
 	expected := "1 * x1 + 2 * x2 = 3"
 
-	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
-	constraint := Constraint{LpConstraintEQ, pairs, 3}
+	pairs := []Pair{{1, NewVariable("x1", nil)}, {2, NewVariable("x2", nil)}}
+	constraint := NewConstraint(LpConstraintEQ, pairs, 3)
 	constraint.AddSlackVariable()
 
 	result := constraint.String()
@@ -35,11 +35,12 @@ func TestConstraint_AddSlackVariable_EQ(t *testing.T) {
 }
 
 func TestConstraint_AddSlackVariable_GE(t *testing.T) {
-	expected := "1 * x1 + 2 * x2 + 1 * s1 = 3"
+	expected := "1 * x1 + 2 * x2 - 1 * s1 = 3"
 
-	pairs := []Pair{{1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
-	constraint := Constraint{LpConstraintGE, pairs, 3}
+	pairs := []Pair{{1, NewVariable("x1", nil)}, {2, NewVariable("x2", nil)}}
+	constraint := NewConstraint(LpConstraintGE, pairs, 3)
 	constraint.AddSlackVariable()
+	constraint.ShowSlack()
 
 	result := constraint.String()
 	if result != expected {
@@ -50,9 +51,10 @@ func TestConstraint_AddSlackVariable_GE(t *testing.T) {
 func TestConstraint_AddSlackVariable_LE(t *testing.T) {
 	expected := "- 1 * x1 + 2 * x2 + 1 * s1 = 3"
 
-	pairs := []Pair{{-1, Variable{"x1", nil}}, {2, Variable{"x2", nil}}}
-	constraint := Constraint{LpConstraintLE, pairs, 3}
+	pairs := []Pair{{-1, NewVariable("x1", nil)}, {2, NewVariable("x2", nil)}}
+	constraint := NewConstraint(LpConstraintLE, pairs, 3)
 	constraint.AddSlackVariable()
+	constraint.ShowSlack()
 
 	result := constraint.String()
 	if result != expected {
@@ -67,7 +69,7 @@ OBJECTIVES
 func TestNewObjective(t *testing.T) {
 	expected := "Min: 3 * x1 + 4 * x2"
 
-	pairs := []Pair{{3, Variable{"x1", nil}}, {4, Variable{"x2", nil}}}
+	pairs := []Pair{{3, NewVariable("x1", nil)}, {4, NewVariable("x2", nil)}}
 	objective := NewObjective(LpMinimise, pairs)
 
 	result := objective.String()
@@ -83,11 +85,11 @@ LINEAR PROGRAM
 func TestNewLinearProgram(t *testing.T) {
 	expected := "Min: - 3 * x1 + 4 * x2\n\t1 * x1 - 2 * x2 >= 3\n\t1 * x1 - 2 * x2 = 3\n\t1 * x1 - 2 * x2 <= 3\n"
 
-	objective := Objective{LpMinimise, []Pair{{-3, Variable{"x1", nil}}, {4, Variable{"x2", nil}}}}
-	pairs := []Pair{{1, Variable{"x1", nil}}, {-2, Variable{"x2", nil}}}
-	constraint1 := Constraint{LpConstraintGE, pairs, 3}
-	constraint2 := Constraint{LpConstraintEQ, pairs, 3}
-	constraint3 := Constraint{LpConstraintLE, pairs, 3}
+	objective := Objective{LpMinimise, []Pair{{-3, NewVariable("x1", nil)}, {4, NewVariable("x2", nil)}}}
+	pairs := []Pair{{1, NewVariable("x1", nil)}, {-2, NewVariable("x2", nil)}}
+	constraint1 := NewConstraint(LpConstraintGE, pairs, 3)
+	constraint2 := NewConstraint(LpConstraintEQ, pairs, 3)
+	constraint3 := NewConstraint(LpConstraintLE, pairs, 3)
 	constraints := []Constraint{constraint1, constraint2, constraint3}
 	lp := NewLinearProgram(objective, constraints)
 
@@ -104,7 +106,7 @@ PAIR
 func TestNewPair(t *testing.T) {
 	expected := "3 * x1"
 
-	pair := NewPair(3, Variable{"x1", nil})
+	pair := NewPair(3, NewVariable("x1", nil))
 
 	result := pair.String()
 	if result != expected {
@@ -116,7 +118,7 @@ func TestPair_Result(t *testing.T) {
 	expected := 9.0
 
 	variableValue := 3.0
-	pair := NewPair(3, Variable{"x1", &variableValue})
+	pair := NewPair(3, NewVariable("x1", &variableValue))
 
 	result := pair.Result()
 	if result != expected {
