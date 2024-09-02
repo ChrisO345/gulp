@@ -6,10 +6,27 @@ import "fmt"
 type LinearProgram struct {
 	ObjectiveFunction Objective
 	Constraints       []Constraint
+	ShowSlackVariable bool
+
+	// Solution
+	Solution     []float64
+	OptimalValue float64
 }
 
-func NewLinearProgram(objective Objective, constraints []Constraint) *LinearProgram {
-	return &LinearProgram{objective, constraints}
+func NewLinearProgram() LinearProgram {
+	return LinearProgram{}
+}
+
+func (lp *LinearProgram) AddObjectiveFunction(objective Objective) {
+	lp.ObjectiveFunction = objective
+}
+
+func (lp *LinearProgram) AddConstraint(constraint Constraint) {
+	if lp.ShowSlackVariable {
+		constraint.ShowSlackVariable = true
+		constraint.Pairs[len(constraint.Pairs)-1].Variable.Name = fmt.Sprintf("s%d", len(lp.Constraints)+1)
+	}
+	lp.Constraints = append(lp.Constraints, constraint)
 }
 
 func (lp *LinearProgram) String() string {
@@ -21,6 +38,8 @@ func (lp *LinearProgram) String() string {
 }
 
 func (lp *LinearProgram) ShowSlack() {
+	lp.ShowSlackVariable = true
+	var slacks []Variable
 	for i := range lp.Constraints {
 		lp.Constraints[i].ShowSlackVariable = true
 
@@ -28,27 +47,27 @@ func (lp *LinearProgram) ShowSlack() {
 		for j := range lp.Constraints[i].Pairs {
 			if lp.Constraints[i].Pairs[j].Variable.IsSlack {
 				lp.Constraints[i].Pairs[j].Variable.Name = fmt.Sprintf("s%d", i+1)
+				slacks = append(slacks, lp.Constraints[i].Pairs[j].Variable)
 			}
 		}
+	}
+	// Add to objective function with 0 coefficient
+	for _, v := range slacks {
+		lp.ObjectiveFunction.Pairs = append(lp.ObjectiveFunction.Pairs, Pair{0, v})
 	}
 }
 
 func (lp *LinearProgram) Solve() LpStatus {
-	lp.BasisVariable()
-	return LpStatusNotImplemented
-}
-
-func (lp *LinearProgram) BasisVariable() {
-	stringBuilder := ""
-	for _, v := range lp.Constraints {
-		// One Slack Variable per Constraint
-		for _, p := range v.Pairs {
-			if p.Variable.IsSlack {
-				stringBuilder += fmt.Sprintf(p.Variable.Name)
-			}
-		}
-		stringBuilder += ", "
+	if !lp.ShowSlackVariable {
+		lp.ShowSlack()
 	}
-	stringBuilder = stringBuilder[:len(stringBuilder)-2] + " >= 0"
-	fmt.Println(stringBuilder)
+	tableau := NewTableau(lp)
+	fmt.Println(tableau.String())
+
+	// FIXME: this cannot be specified this way as the solution could be unbounded
+	for !tableau.IsOptimal() {
+		tableau.Pivot()
+	}
+	fmt.Println(tableau.TableauValue)
+	return LpStatusOptimal
 }

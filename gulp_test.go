@@ -91,7 +91,11 @@ func TestNewLinearProgram(t *testing.T) {
 	constraint2 := NewConstraint(LpConstraintEQ, pairs, 3)
 	constraint3 := NewConstraint(LpConstraintLE, pairs, 3)
 	constraints := []Constraint{constraint1, constraint2, constraint3}
-	lp := NewLinearProgram(objective, constraints)
+	lp := NewLinearProgram()
+	lp.AddObjectiveFunction(objective)
+	for _, c := range constraints {
+		lp.AddConstraint(c)
+	}
 
 	result := lp.String()
 	if result != expected {
