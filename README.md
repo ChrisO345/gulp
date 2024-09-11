@@ -140,7 +140,7 @@ lp.AddConstraint(gulp.NewExpression([]gulp.LpTerm{
 
 Each constraint is composed of:
 - **Expression**: Defined similarly to the objective function using `gulp.NewTerm()` and `gulp.NewExpression()`.
-- **Type**: The type of constraint. We use `gulp.LpConstraintLE` for less than or equal to ($\leq$), `gulp.LpConstraintGE` for greater than or equal to ($\qeq$), and `gulp.LpConstraintEQ` for equality ($\eq$).
+- **Type**: The type of constraint. We use `gulp.LpConstraintLE` for less than or equal to ($\leq$), `gulp.LpConstraintGE` for greater than or equal to ($\geq$), and `gulp.LpConstraintEQ` for equality ($=$).
 - **Right-hand Side**: The value on the right-hand side of the constraint.
 
 ### Solving the Problem
